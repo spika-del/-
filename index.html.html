@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10の権利ランキング</title>
+  <style>
+    :root{
+      --bg:#f6f2eb;
+      --panel:#f8f4ed;
+      --line:#d7cfc3;
+      --text:#6a4b2d;
+      --muted:#6d6a66;
+      --sky:#4ba8ff;
+      --gold:#f1c533;
+      --orange:#f2a341;
+      --green:#88c85b;
+      --blue:#44a8ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+      background:var(--bg);
+      color:#333;
+    }
+    .page{
+      max-width:1400px;
+      margin:24px auto;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:20px;
+      box-shadow:0 2px 10px rgba(0,0,0,.05);
+    }
+    .layout{
+      display:grid;
+      grid-template-columns: minmax(0,1.35fr) minmax(320px,.5fr);
+      gap:24px;
+    }
+    .header{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      margin-bottom:20px;
+    }
+    .title-wrap{display:flex; gap:16px; align-items:flex-start}
+    .trophy{
+      width:64px;height:64px;border-radius:50%;
+      background:var(--sky);color:white;
+      display:flex;align-items:center;justify-content:center;
+      font-size:34px; flex:0 0 auto;
+    }
+    h1{
+      margin:0;
+      color:#8a5a21;
+      font-size: clamp(30px, 4vw, 54px);
+      line-height:1.15;
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+    .subtitle{
+      margin-top:8px;
+      font-size: clamp(18px, 2vw, 30px);
+      color:#6c655e;
+      font-weight:700;
+    }
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:14px 20px;
+      background:white;
+      color:#7a582f;
+      font-weight:700;
+      font-size:16px;
+      cursor:pointer;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+      border:1px solid var(--line);
+    }
+    .btn.primary{background:var(--sky); color:#fff; border-color:transparent;}
+    .btn.secondary{background:#fff}
+    .btn:hover{filter:brightness(.98)}
+    .main-board{
+      position:relative;
+      overflow:hidden;
+      border-radius:28px;
+      padding:10px 10px 18px;
+      min-height:980px;
+    }
+    .zone{
+      position:absolute; left:50%; transform:translateX(-50%);
+      pointer-events:none; opacity:.95;
+    }
+    .zone.top{
+      top:86px; width:520px; height:290px;
+      background:#f8f1d8;
+      border:2px solid #efc445;
+      clip-path:polygon(50% 0%,100% 100%,0% 100%);
+    }
+    .zone.orange{
+      top:405px; width:min(92%, 930px); height:215px;
+      background:#fff4df; border:2px dashed #f0ad5c; border-radius:42px;
+    }
+    .zone.green{
+      top:645px; width:min(92%, 930px); height:215px;
+      background:#eef9e5; border:2px dashed #a8d47f; border-radius:42px;
+    }
+    .zone.bottom{
+      bottom:74px; width:560px; height:265px;
+      background:#e5f3ff;
+      border:2px solid #69b8ff;
+      clip-path:polygon(0 0,100% 0,50% 100%);
+    }
+    .board-content{position:relative; z-index:1;}
+    .badge{
+      display:inline-block; color:#fff; font-weight:900;
+      padding:12px 24px; border-radius:999px;
+      box-shadow:0 1px 4px rgba(0,0,0,.08);
+      font-size: clamp(22px, 2.2vw, 40px);
+    }
+    .badge.small{font-size: clamp(18px, 1.8vw, 26px); padding:10px 28px}
+    .badge.gold{background:var(--gold)}
+    .badge.orange{background:var(--orange)}
+    .badge.green{background:var(--green)}
+    .badge.blue{background:var(--blue)}
+    .center{text-align:center}
+    .mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}
+    .mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}
+    .rank1-wrap,.rank10-wrap{display:flex; justify-content:center}
+    .single-slot{width:250px}
+    .grid4{
+      display:grid; gap:14px;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+    }
+    .slot{
+      min-height:145px;
+      padding:4px;
+      border-radius:22px;
+      border:2px dashed transparent;
+      transition:.15s ease;
+    }
+    .slot.dragover{
+      border-color:#77b8ff;
+      background:rgba(255,255,255,.35);
+    }
+    .card{
+      width:100%;
+      background:#fff;
+      border:1px solid #e1ddd8;
+      border-radius:18px;
+      box-shadow:0 2px 6px rgba(0,0,0,.05);
+      padding:12px;
+      user-select:none;
+      cursor:grab;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    }
+    .card:active{cursor:grabbing}
+    .card.dragging{opacity:.55; transform:scale(.97)}
+    .card:hover{box-shadow:0 4px 10px rgba(0,0,0,.08)}
+    .card-inner{
+      display:flex; flex-direction:column; align-items:center; gap:8px;
+    }
+    .iconbox{
+      width:76px;height:76px;border-radius:22px;
+      background:#eef2f5; display:flex;align-items:center;justify-content:center;
+      font-size:42px;
+    }
+    .label{
+      font-weight:800; text-align:center; line-height:1.35; color:#48505a;
+      font-size:18px;
+    }
+    .compact .card{padding:10px}
+    .compact .card-inner{flex-direction:row; align-items:center; gap:10px}
+    .compact .iconbox{width:54px;height:54px;font-size:28px;border-radius:16px}
+    .compact .label{font-size:15px;text-align:left}
+    .helper{
+      margin-top:34px; text-align:center; font-size:28px; line-height:1.6;
+      color:#6f6960; font-weight:800;
+    }
+    .name-row{
+      margin-top:20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;
+    }
+    .name-input{
+      border:1px solid var(--line); background:white; border-radius:16px;
+      padding:14px 16px; font-size:18px; min-width:240px;
+    }
+    .btn-row{
+      margin-top:20px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    }
+    .side{
+      border:1px solid var(--line); border-radius:28px; background:var(--panel);
+      padding:14px;
+      height:fit-content;
+    }
+    .side-title{
+      display:inline-block; border-radius:999px; padding:10px 18px;
+      background:var(--sky); color:#fff; font-weight:900; font-size:30px;
+      margin-bottom:14px;
+    }
+    .side-item{
+      background:#fff; border:1px solid #e1ddd8; border-radius:22px;
+      padding:12px; margin-bottom:14px;
+    }
+    .side-badge{
+      display:inline-block; margin-bottom:10px; border-radius:999px;
+      color:#fff; font-weight:900; padding:8px 16px; font-size:16px;
+    }
+    .rank-list{display:flex; flex-direction:column; gap:10px}
+    .note{color:#7d756d; font-size:14px}
+    .teacher-box{
+      margin-top:18px; background:#fff; border:1px solid #e1ddd8;
+      border-radius:22px; padding:14px;
+    }
+    .teacher-title{font-size:22px; font-weight:900; color:#695741}
+    .summary-list{margin-top:14px; display:flex; flex-direction:column; gap:8px}
+    .summary-row{
+      display:flex; align-items:center; gap:12px; border:1px solid #ece8e2;
+      background:#faf8f5; border-radius:18px; padding:8px 10px;
+    }
+    .num{
+      width:34px;height:34px;border-radius:50%; background:var(--sky); color:#fff;
+      display:flex;align-items:center;justify-content:center;font-weight:900; flex:0 0 auto;
+    }
+    .score{margin-left:auto; color:var(--sky); font-weight:900}
+    .hidden{display:none !important}
+    @media (max-width: 1100px){
+      .layout{grid-template-columns: 1fr}
+      .main-board{min-height:1020px}
+    }
+    @media (max-width: 860px){
+      .grid4{grid-template-columns: repeat(2, minmax(0,1fr));}
+      .zone.top{width:360px;height:230px}
+      .zone.orange{top:370px;height:310px}
+      .zone.green{top:700px;height:310px}
+      .zone.bottom{bottom:80px;width:360px;height:220px}
+      .main-board{min-height:1180px}
+      .helper{font-size:22px}
+    }
+    @media (max-width: 560px){
+      .page{margin:8px; padding:12px}
+      .header{flex-direction:column}
+      .title-wrap{align-items:center}
+      .subtitle{font-size:18px}
+      .single-slot{width:220px}
+      .main-board{padding:4px; min-height:1220px}
+      .zone.orange{top:360px}
+      .zone.green{top:710px}
+      .helper{font-size:18px}
+      .side-title{font-size:24px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="layout">
+      <div>
+        <div class="header">
+          <div class="title-wrap">
+            <div class="trophy">🏆</div>
+            <div>
+              <h1>10の権利の必要度をランキングしよう</h1>
+              <div class="subtitle">ドラッグして、あなたが考える必要度の高い順に並べてみよう！</div>
+            </div>
+          </div>
+          <button class="btn secondary" id="resetTopBtn">↺ リセット</button>
+        </div>
+
+        <div class="main-board">
+          <div class="zone top"></div>
+          <div class="zone orange"></div>
+          <div class="zone green"></div>
+          <div class="zone bottom"></div>
+
+          <div class="board-content">
+            <div class="center mb-2"><span class="badge gold">👑 1位</span></div>
+            <div class="rank1-wrap mb-3">
+              <div class="single-slot">
+                <div class="slot" data-slot="rank1"></div>
+              </div>
+            </div>
+
+            <div class="center mb-2"><span class="badge small orange">とても大事（2〜5位）</span></div>
+            <div class="grid4 mb-3" id="topGroup"></div>
+
+            <div class="center mb-2"><span class="badge small green">大事（6〜9位）</span></div>
+            <div class="grid4 mb-3" id="midGroup"></div>
+
+            <div class="center mb-2"><span class="badge blue">10位</span></div>
+            <div class="rank10-wrap mb-3">
+              <div class="single-slot">
+                <div class="slot" data-slot="rank10"></div>
+              </div>
+            </div>
+
+            <div class="helper">
+              あなたの考えは何度でも見直せます。<br>
+              じっくり考えて、自分だけのランキングをつくろう！
+            </div>
+
+            <div class="name-row">
+              <input class="name-input" id="studentName" placeholder="名前を入れる">
+              <span class="note">保存すると、提出用のJSONファイルがダウンロードされます。</span>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn secondary" id="resetBottomBtn">↺ リセット</button>
+              <button class="btn primary" id="saveBtn">💾 このランキングを保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="side-title">いまの順位一覧</div>
+
+        <div class="side-item">
+          <div class="side-badge" style="background:#f1c533">1位</div>
+          <div id="sideRank1" class="rank-list compact"></div>
+        </div>
+
+        <div class="side-item">
+          <div class="side-badge" style="background:#f2a341">とても大事（2〜5位）</div>
+          <div id="sideTop" class="rank-list compact"></div>
+        </div>
+
+        <div class="side-item">
+          <div class="side-badge" style="background:#88c85b">大事（6〜9位）</div>
+          <div id="sideMid" class="rank-list compact"></div>
+        </div>
+
+        <div class="side-item">
+          <div class="side-badge" style="background:#44a8ff">10位</div>
+          <div id="sideRank10" class="rank-list compact"></div>
+        </div>
+
+        <div class="note">※ 何度でも入れ替えできます</div>
+
+        <div class="teacher-box">
+          <div class="teacher-title">先生用：クラス全体ランキング</div>
+          <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn secondary" id="importBtn">児童の保存ファイルを読み込む</button>
+            <input type="file" id="importFiles" accept="application/json" multiple class="hidden">
+          </div>
+          <div class="note" style="margin-top:8px;">保存したJSONをまとめて選ぶと、クラス全体の傾向を集計できます。</div>
+          <div id="summaryList" class="summary-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const RIGHTS = [
+  { id: "thought", label: "思想や学問の自由", icon: "📚" },
+  { id: "union", label: "働く人が団結する権利", icon: "🤝" },
+  { id: "dignity", label: "個人の尊重・法の下の平等", icon: "🧑‍🤝‍🧑" },
+  { id: "education", label: "教育を受ける権利", icon: "🏫" },
+  { id: "vote", label: "政治に参加する権利", icon: "🗳️" },
+  { id: "speech", label: "言論や集会の自由", icon: "🎤" },
+  { id: "trial", label: "裁判を受ける権利", icon: "⚖️" },
+  { id: "work", label: "仕事について働く権利", icon: "💼" },
+  { id: "livewhere", label: "居住や移転、職業を選ぶ自由", icon: "🏠" },
+  { id: "life", label: "健康で文化的な生活を営む権利", icon: "🌞" }
+];
+
+const INITIAL = {
+  rank1: "speech",
+  rank2: "thought",
+  rank3: "union",
+  rank4: "dignity",
+  rank5: "education",
+  rank6: "vote",
+  rank7: "trial",
+  rank8: "work",
+  rank9: "livewhere",
+  rank10: "life"
+};
+
+const TOP_GROUP = ["rank2","rank3","rank4","rank5"];
+const MID_GROUP = ["rank6","rank7","rank8","rank9"];
+
+const itemsById = Object.fromEntries(RIGHTS.map(r => [r.id, r]));
+let assignment = {...INITIAL};
+let draggingId = null;
+
+function createCard(item, compact=false){
+  const wrap = document.createElement("div");
+  wrap.className = compact ? "compact" : "";
+  wrap.innerHTML = `
+    <div class="card" draggable="true" data-item="${item.id}">
+      <div class="card-inner">
+        <div class="iconbox">${item.icon}</div>
+        <div class="label">${item.label}</div>
+      </div>
+    </div>
+  `;
+  const card = wrap.querySelector(".card");
+  card.addEventListener("dragstart", (e) => {
+    draggingId = item.id;
+    card.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", item.id);
+  });
+  card.addEventListener("dragend", () => {
+    draggingId = null;
+    card.classList.remove("dragging");
+    document.querySelectorAll(".slot").forEach(s => s.classList.remove("dragover"));
+  });
+  return wrap;
+}
+
+function setupSlots(){
+  const topGroup = document.getElementById("topGroup");
+  const midGroup = document.getElementById("midGroup");
+  topGroup.innerHTML = "";
+  midGroup.innerHTML = "";
+
+  for(const slotId of TOP_GROUP){
+    const div = document.createElement("div");
+    div.className = "slot";
+    div.dataset.slot = slotId;
+    topGroup.appendChild(div);
+  }
+  for(const slotId of MID_GROUP){
+    const div = document.createElement("div");
+    div.className = "slot";
+    div.dataset.slot = slotId;
+    midGroup.appendChild(div);
+  }
+
+  document.querySelectorAll(".slot").forEach(slot => {
+    slot.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      slot.classList.add("dragover");
+    });
+    slot.addEventListener("dragleave", () => slot.classList.remove("dragover"));
+    slot.addEventListener("drop", (e) => {
+      e.preventDefault();
+      slot.classList.remove("dragover");
+      const itemId = e.dataTransfer.getData("text/plain");
+      const targetSlot = slot.dataset.slot;
+      if(itemId) handleDrop(targetSlot, itemId);
+    });
+  });
+}
+
+function handleDrop(targetSlot, itemId){
+  const fromSlot = Object.keys(assignment).find(key => assignment[key] === itemId);
+  if(!fromSlot || fromSlot === targetSlot) return;
+  const targetItem = assignment[targetSlot];
+  assignment[targetSlot] = itemId;
+  assignment[fromSlot] = targetItem;
+  render();
+}
+
+function renderMainBoard(){
+  document.querySelectorAll(".slot").forEach(slot => {
+    const slotId = slot.dataset.slot;
+    const item = itemsById[assignment[slotId]];
+    slot.innerHTML = "";
+    slot.appendChild(createCard(item, false));
+  });
+}
+
+function fillSideList(containerId, slotIds){
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  slotIds.forEach(slotId => {
+    const item = itemsById[assignment[slotId]];
+    const dropWrap = document.createElement("div");
+    dropWrap.dataset.slot = slotId;
+    dropWrap.addEventListener("dragover", (e) => e.preventDefault());
+    dropWrap.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const itemId = e.dataTransfer.getData("text/plain");
+      if(itemId) handleDrop(slotId, itemId);
+    });
+    dropWrap.appendChild(createCard(item, true));
+    container.appendChild(dropWrap);
+  });
+}
+
+function renderSide(){
+  fillSideList("sideRank1", ["rank1"]);
+  fillSideList("sideTop", TOP_GROUP);
+  fillSideList("sideMid", MID_GROUP);
+  fillSideList("sideRank10", ["rank10"]);
+}
+
+function render(){
+  renderMainBoard();
+  renderSide();
+}
+
+function resetRanking(){
+  assignment = {...INITIAL};
+  render();
+}
+
+function scoreForSlot(slotId){
+  if(slotId === "rank1") return 4;
+  if(TOP_GROUP.includes(slotId)) return 3;
+  if(MID_GROUP.includes(slotId)) return 2;
+  return 1;
+}
+
+function downloadCurrentRanking(){
+  const studentName = document.getElementById("studentName").value.trim() || "なまえなし";
+  const payload = {
+    studentName,
+    submittedAt: new Date().toISOString(),
+    assignment
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const safe = studentName.replace(/[\\/:*?"<>|]/g, "_");
+  a.href = url;
+  a.download = `${safe}_rights_ranking.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importClassFiles(fileList){
+  const totals = Object.fromEntries(RIGHTS.map(r => [r.id, 0]));
+  for(const file of fileList){
+    try{
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const imported = data.assignment || {};
+      Object.entries(imported).forEach(([slotId, rightId]) => {
+        if(totals[rightId] !== undefined){
+          totals[rightId] += scoreForSlot(slotId);
+        }
+      });
+    }catch(err){
+      console.error("読み込み失敗", file.name, err);
+    }
+  }
+  const summary = RIGHTS.map(r => ({...r, score: totals[r.id]}))
+    .sort((a,b) => b.score - a.score);
+  renderSummary(summary);
+}
+
+function renderSummary(summary){
+  const box = document.getElementById("summaryList");
+  box.innerHTML = "";
+  summary.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "summary-row";
+    row.innerHTML = `
+      <div class="num">${index + 1}</div>
+      <div class="iconbox" style="width:52px;height:52px;font-size:28px;border-radius:16px;">${item.icon}</div>
+      <div class="label" style="font-size:15px;text-align:left;">${item.label}</div>
+      <div class="score">${item.score}点</div>
+    `;
+    box.appendChild(row);
+  });
+}
+
+document.getElementById("resetTopBtn").addEventListener("click", resetRanking);
+document.getElementById("resetBottomBtn").addEventListener("click", resetRanking);
+document.getElementById("saveBtn").addEventListener("click", downloadCurrentRanking);
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFiles").click());
+document.getElementById("importFiles").addEventListener("change", (e) => {
+  const files = Array.from(e.target.files || []);
+  if(files.length) importClassFiles(files);
+  e.target.value = "";
+});
+
+setupSlots();
+render();
+</script>
+</body>
+</html>
